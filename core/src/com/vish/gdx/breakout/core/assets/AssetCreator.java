@@ -8,9 +8,9 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.vish.gdx.breakout.actors.ThreeeDBlock;
 import com.vish.gdx.breakout.core.actors.ImageActor;
-import com.vish.gdx.breakout.utils.Constants;
+import static com.vish.gdx.breakout.utils.Constants.*;
 
-public class AssetCreator implements Constants {
+public class AssetCreator {
 
 	public Texture createBackground() {
 		Pixmap pixmap;

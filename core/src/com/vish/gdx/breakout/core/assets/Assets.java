@@ -14,11 +14,11 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.Disposable;
-import com.vish.gdx.breakout.utils.Constants;
+import static com.vish.gdx.breakout.utils.Constants.*;
 import com.vish.gdx.breakout.utils.SkinLoader;
 import com.vish.gdx.breakout.utils.Theme;
 
-public class Assets implements Disposable, AssetErrorListener, Constants {
+public class Assets implements Disposable, AssetErrorListener {
 
 	private static final String TAG = Assets.class.getName();
 
@@ -155,7 +155,18 @@ public class Assets implements Disposable, AssetErrorListener, Constants {
 
 	@Override
 	public void dispose() {
-
+		if (assetManager != null) {
+			assetManager.dispose();
+		}
+		if (skinLibgdx != null) {
+			skinLibgdx.dispose();
+		}
+		if (fonts != null) {
+			fonts.dispose();
+		}
+		if (sounds != null) {
+			sounds.dispose();
+		}
 	}
 
 }

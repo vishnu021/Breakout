@@ -8,9 +8,9 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.vish.gdx.breakout.core.actors.ImageActor;
 import com.vish.gdx.breakout.core.assets.Assets;
-import com.vish.gdx.breakout.utils.Constants;
+import static com.vish.gdx.breakout.utils.Constants.*;
 
-public class BlockAnimationLayer extends Group implements Constants {
+public class BlockAnimationLayer extends Group {
 	private List<Actor> horizontalBeam;
 	private List<Actor> verticalBeam;
 

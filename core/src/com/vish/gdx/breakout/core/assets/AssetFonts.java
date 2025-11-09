@@ -59,5 +59,20 @@ public class AssetFonts {
 		default:
 			return null;
 		}
-	};
+	}
+
+	public void dispose() {
+		if (defaultMicro != null) {
+			defaultMicro.dispose();
+		}
+		if (defaultSmall != null) {
+			defaultSmall.dispose();
+		}
+		if (defaultMiddle != null) {
+			defaultMiddle.dispose();
+		}
+		if (defaultBig != null) {
+			defaultBig.dispose();
+		}
+	}
 }

@@ -12,9 +12,9 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.vish.gdx.breakout.core.assets.Assets;
-import com.vish.gdx.breakout.utils.Constants;
+import static com.vish.gdx.breakout.utils.Constants.*;
 
-public class InteractiveBackground extends Group implements Constants {
+public class InteractiveBackground extends Group {
 	Random random = new Random();
 	Color[] colors = { Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW, Color.BROWN, Color.ORANGE, Color.GOLD,
 			Color.SKY, Color.SALMON };

@@ -15,32 +15,25 @@ import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.vish.gdx.breakout.GameStage;
 import com.vish.gdx.breakout.core.actors.ImageActor;
 import com.vish.gdx.breakout.core.assets.Assets;
-import com.vish.gdx.breakout.utils.Constants;
+import static com.vish.gdx.breakout.utils.Constants.*;
 
-public class GameScreen implements Screen, Constants {
+public class GameScreen implements Screen {
+	private static final String TAG = GameScreen.class.getName();
 
 	Game thisGame;
 	GameStage stage;
 	Stage pauseStage;
 	public int step = 1;
 	ImageActor backGroundActor;
-//	Group screenShotHolder;
 
 	public GameScreen(Game thisGame) {
 		Gdx.input.setCatchBackKey(true);
-		// check if game data is present
 		stage = Assets.INSTANCE.getPreferences().loadGame();
 		if (stage == null) {
-			System.out.println("Creating new GameStage.");
+			Gdx.app.log(TAG, "Creating new GameStage.");
 			stage = new GameStage(new StretchViewport(GAME_WIDTH, GAME_HEIGHT));
 		}
 
-		// else {
-		// System.out.println("Creating new bg");
-		//
-		// stage = new GameStage(new StretchViewport(GAME_WIDTH, GAME_HEIGHT));
-		//
-		// }
 		this.thisGame = thisGame;
 		stage.gameState = State.RUN;
 		initialisePauseStage();
@@ -160,7 +153,5 @@ public class GameScreen implements Screen, Constants {
 	public void pause() {
 		stage.gameState = State.PAUSE;
 		stage.pauseCover.setVisible(true);
-//		Assets.INSTANCE.getPreferences().saveGame(stage);
-
 	}
 }

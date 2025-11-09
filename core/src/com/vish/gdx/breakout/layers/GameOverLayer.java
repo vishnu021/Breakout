@@ -5,16 +5,18 @@ import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.vish.gdx.breakout.core.assets.Assets;
-import com.vish.gdx.breakout.utils.Constants;
+import static com.vish.gdx.breakout.utils.Constants.*;
 
-public class GameOverLayer extends Group implements Constants {
+public class GameOverLayer extends Group {
+	private static final String TAG = GameOverLayer.class.getName();
+
 	Skin skinLibgdx;
 
 	public GameOverLayer(int currentScore) {
 		super();
 		skinLibgdx = Assets.INSTANCE.getSkinLibgdx();
 		Label gameOverLabel = new Label("GAME OVER", skinLibgdx, "ttf-font", Color.WHITE);
-		System.out.println("Getting maxScroe : " + Assets.INSTANCE.getPreferences().getMaxScore());
+		Gdx.app.debug(TAG, "Getting maxScroe : " + Assets.INSTANCE.getPreferences().getMaxScore());
 		Label highestLabel = new Label("Highest : " + String.valueOf(Assets.INSTANCE.getPreferences().getMaxScore()),
 				skinLibgdx, "ttf-font-mid", Color.WHITE);
 		Label score = new Label("Your Score : " + String.valueOf(currentScore), skinLibgdx, "ttf-font-mid", Color.WHITE);

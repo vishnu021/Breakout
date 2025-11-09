@@ -43,4 +43,10 @@ public class SoundManager {
 			}
 		}
 	}
+
+	public void dispose() {
+		if (blockHitSound != null) {
+			blockHitSound.dispose();
+		}
+	}
 }

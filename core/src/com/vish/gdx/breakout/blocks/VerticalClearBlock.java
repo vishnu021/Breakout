@@ -1,5 +1,6 @@
 package com.vish.gdx.breakout.blocks;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.World;
@@ -10,18 +11,19 @@ import com.badlogic.gdx.scenes.scene2d.actions.SequenceAction;
 import com.vish.gdx.breakout.actors.BlockGroup;
 
 public class VerticalClearBlock extends AbstractBlock {
+	private static final String TAG = VerticalClearBlock.class.getName();
 
 	public boolean touched = false;
 	private Actor effectActor;
 
 	public VerticalClearBlock(BlockGroup blockGroup, float x, float y, World world, Actor blockImage) {
 		super(BlockType.VERTICAL_CLEARER, blockGroup, x, y, world, blockImage);
-		System.out.println("Constructor called");
+		Gdx.app.debug(TAG, "Constructor called");
 	}
 
 	public VerticalClearBlock() {
 		super();
-		System.out.println("Default Constructor called");
+		Gdx.app.debug(TAG, "Default Constructor called");
 	}
 
 	public void decreaseCount() {

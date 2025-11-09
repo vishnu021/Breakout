@@ -4,9 +4,9 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.vish.gdx.breakout.core.actors.ImageActor;
-import com.vish.gdx.breakout.utils.Constants;
+import static com.vish.gdx.breakout.utils.Constants.*;
 
-public class ThreeeDBlock extends Group implements Constants {
+public class ThreeeDBlock extends Group {
 	public ImageActor frontBlock;
 	public ImageActor backBlock;
 

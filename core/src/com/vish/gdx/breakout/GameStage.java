@@ -34,10 +34,12 @@ import com.vish.gdx.breakout.core.assets.Assets;
 import com.vish.gdx.breakout.layers.BlockAnimationLayer;
 import com.vish.gdx.breakout.layers.GameDetailsGroup;
 import com.vish.gdx.breakout.layers.GameOverLayer;
-import com.vish.gdx.breakout.utils.Constants;
-import com.vish.gdx.breakout.utils.WorldCotactListener;
+import static com.vish.gdx.breakout.utils.Constants.*;
+import com.vish.gdx.breakout.utils.WorldContactListener;
 
-public class GameStage extends Stage implements Constants, GestureListener, Serializable {
+public class GameStage extends Stage implements GestureListener, Serializable {
+	private static final String TAG = GameStage.class.getName();
+
 	// debug
 	boolean debug = false;
 	Matrix4 debugMatrix;
@@ -66,6 +68,10 @@ public class GameStage extends Stage implements Constants, GestureListener, Seri
 
 	// physics objects
 	World world;
+	private static final float TIME_STEP = 1 / 60f;
+	private static final int VELOCITY_ITERATIONS = 6;
+	private static final int POSITION_ITERATIONS = 2;
+	private float accumulator = 0;
 
 	InputMultiplexer multiplexer;
 
@@ -84,7 +90,7 @@ public class GameStage extends Stage implements Constants, GestureListener, Seri
 	@Override
 	public void read(Json json, JsonValue jsonData) {
 		initialise();
-		System.out.println("Reading GameStage");
+		Gdx.app.debug(TAG, "Reading GameStage");
 		blockGroup = json.readValue("blockGroup", BlockGroup.class, jsonData);
 		blockGroup.gameStage = this;
 		blockGroup.world = this.world;
@@ -98,7 +104,7 @@ public class GameStage extends Stage implements Constants, GestureListener, Seri
 		// this.setDebugAll(true);
 		skinLibgdx = Assets.INSTANCE.getSkinLibgdx();
 		world = new World(new Vector2(0, 0f), true);
-		world.setContactListener(new WorldCotactListener());
+		world.setContactListener(new WorldContactListener());
 		if (debug)
 			debugRenderer = new Box2DDebugRenderer();
 
@@ -204,14 +210,31 @@ public class GameStage extends Stage implements Constants, GestureListener, Seri
 			debugMatrix = this.getBatch().getProjectionMatrix().cpy().scale(PIXELS_TO_METERS, PIXELS_TO_METERS, 0);
 			debugRenderer.render(world, debugMatrix);
 		}
+	}
+
+	@Override
+	public void act(float delta) {
 		if (gameState == State.RUN) {
-			background.next();
-			world.step(1f / 60f, 6, 2);
-			if (gameDetailsGroup.accelerated) {
-				world.step(1f / 60f, 6, 2);
-				world.step(1f / 60f, 6, 2);
+			super.act(delta);
+
+			// Fixed timestep physics simulation
+			float frameTime = Math.min(delta, 0.25f);
+			accumulator += frameTime;
+
+			int stepMultiplier = gameDetailsGroup.accelerated ? 3 : 1;
+
+			while (accumulator >= TIME_STEP) {
+				for (int i = 0; i < stepMultiplier; i++) {
+					world.step(TIME_STEP, VELOCITY_ITERATIONS, POSITION_ITERATIONS);
+					background.next();
+				}
+				accumulator -= TIME_STEP;
 			}
+
+			// Clean up destroyed physics bodies
 			blockGroup.clearPhysics();
+
+			// Game state updates
 			if (blockGroup.gameOver) {
 				if (gameOverTable == null) {
 					gameOverTable = new GameOverLayer(blockGroup.step - 1);
@@ -224,19 +247,12 @@ public class GameStage extends Stage implements Constants, GestureListener, Seri
 				gameDetailsGroup.setStepCounterValue(1);
 				gameDetailsGroup.updateBestScore();
 			} else if (ballGroup.launchComplete && !ballGroup.hasChildren()) {
-				Gdx.app.log("Time", "Ball action complete");
+				Gdx.app.log("GameStage", "Ball action complete");
 				gameDetailsGroup.setStepCounterValue(++blockGroup.step);
 				gameDetailsGroup.setMultiplierValue(blockGroup.ballCount);
 				blockGroup.nextStep();
 				ballGroup.launchComplete = false;
 			}
-		}
-	}
-
-	@Override
-	public void act(float delta) {
-		if (gameState == State.RUN) {
-			super.act(delta);
 		}
 	}
 
@@ -280,9 +296,9 @@ public class GameStage extends Stage implements Constants, GestureListener, Seri
 				initialX = x;
 				initialY = y;
 			}
-			float theta = (float) (MathUtils.atan2(initialY - y, initialX - x) * (180 / (3.141)));
+			float theta = MathUtils.atan2(initialY - y, initialX - x) * MathUtils.radiansToDegrees;
 			theta = Math.abs(theta);
-			if (theta > 10 && theta < 170) {
+			if (theta > MIN_LAUNCH_ANGLE && theta < MAX_LAUNCH_ANGLE) {
 				dottedLine.setVisible(true);
 				dottedLine.setX(slider.getX() + slider.getWidth() / 2);
 				dottedLine.setY(slider.getY() + slider.getHeight() / 2);

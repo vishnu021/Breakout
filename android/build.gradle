@@ -1,6 +1,8 @@
 android {
-    buildToolsVersion "25.0.3"
-    compileSdkVersion 25
+    buildToolsVersion "34.0.0"
+    compileSdkVersion 34
+    namespace "com.vish.gdx.breakout"
+
     sourceSets {
         main {
             manifest.srcFile 'AndroidManifest.xml'
@@ -11,16 +13,19 @@ android {
             assets.srcDirs = ['assets']
             jniLibs.srcDirs = ['libs']
         }
-
-        instrumentTest.setRoot('tests')
     }
+
     packagingOptions {
         exclude 'META-INF/robovm/ios/robovm.xml'
+        jniLibs {
+            useLegacyPackaging = true
+        }
     }
+
     defaultConfig {
         applicationId "com.vish.gdx.breakout"
-        minSdkVersion 9
-        targetSdkVersion 25
+        minSdkVersion 21
+        targetSdkVersion 34
         versionCode 1
         versionName "1.0"
     }
@@ -29,6 +34,11 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 }
 

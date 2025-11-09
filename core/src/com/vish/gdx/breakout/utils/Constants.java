@@ -2,7 +2,11 @@ package com.vish.gdx.breakout.utils;
 
 import com.badlogic.gdx.graphics.Color;
 
-public interface Constants {
+public final class Constants {
+
+	private Constants() {
+		// Prevent instantiation
+	}
 
 	public static final String DATA_FILE = "breakout.dat";
 	public static final String TEXTURE_ATLAS_OBJECTS = "BreakOut.pack";
@@ -47,6 +51,17 @@ public interface Constants {
 	public static final float SLIDER_SENSIVITY = 1;
 
 	public static final String Jellee_Roman = "font/GetVoIP Grotesque Italic.otf";
+
+	// LAUNCH ANGLE CONSTRAINTS
+	public static final float MIN_LAUNCH_ANGLE = 10f;
+	public static final float MAX_LAUNCH_ANGLE = 170f;
+
+	// BLOCK GENERATION PROBABILITIES
+	public static final int SPECIAL_BLOCK_CHANCE_DENOMINATOR = 3;
+	public static final int DOUBLE_VALUE_THRESHOLD = 7;
+	public static final int DOUBLE_VALUE_DENOMINATOR = 9;
+	public static final int EMPTY_BLOCK_THRESHOLD = 6;
+	public static final int EMPTY_BLOCK_DENOMINATOR = 10;
 
 	// ACTOR NAMES
 	public static final String SLIDER = "textActor";

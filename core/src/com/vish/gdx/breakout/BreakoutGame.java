@@ -15,21 +15,6 @@ public class BreakoutGame extends Game {
 		Gdx.app.setLogLevel(Application.LOG_DEBUG);
 		Gdx.app.log("Game", "App created");
 
-		// System.out.println("OS name " + System.getProperty("os.name"));
-		// System.out.println("OS version " + System.getProperty("os.version"));
-		//// System.out.println("LWJGL version " + org.lwjgl.Sys.getVersion());
-		// System.out.println("OpenGL version " +
-		// Gdx.graphics.getGLVersion().getDebugVersionString());
-		// System.out.println("OpenGL version2 " +
-		// Gdx.graphics.getGLVersion().getMajorVersion());
-		// System.out.println("OpenGL version3 " +
-		// Gdx.graphics.getGLVersion().getMinorVersion());
-		// System.out.println("OpenGL version4 " +
-		// Gdx.graphics.getGLVersion().getRendererString());
-		// System.out.println("OpenGL type " + Gdx.graphics.getType());
-		//// System.out.println("fps " + Gdx.graphics.getFramesPerSecond());
-		// GLVersion a = Gdx.graphics.getGLVersion();
-
 		Assets.INSTANCE.init(new AssetManager());
 		setScreen(new MenuScreen(this));
 	}

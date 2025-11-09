@@ -1,14 +1,16 @@
 package com.vish.gdx.breakout.blocks;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.vish.gdx.breakout.actors.BlockGroup;
 import com.vish.gdx.breakout.blocks.AbstractBlock.BlockType;
 import com.vish.gdx.breakout.core.actors.ImageActor;
 import com.vish.gdx.breakout.core.assets.Assets;
-import com.vish.gdx.breakout.utils.Constants;
+import static com.vish.gdx.breakout.utils.Constants.*;
 
-public class BlockCreatorFactory implements Constants {
+public class BlockCreatorFactory {
+	private static final String TAG = BlockCreatorFactory.class.getName();
 
 	public AbstractBlock createBlock() {
 		return null;
@@ -41,7 +43,7 @@ public class BlockCreatorFactory implements Constants {
 
 	public Actor createBlockImage(BlockType blockType) {
 		if (blockType == null) {
-			System.out.println("Null type for : ");
+			Gdx.app.error(TAG, "Null type for : ");
 			return null;
 		}
 		switch (blockType) {
@@ -58,7 +60,7 @@ public class BlockCreatorFactory implements Constants {
 		case EMPTY_BLOCK:
 			return null;
 		default:
-			System.out.println("Default type for : ");
+			Gdx.app.error(TAG, "Default type for : ");
 			break;
 		}
 		return null;

@@ -12,9 +12,9 @@ import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.Json.Serializable;
 import com.badlogic.gdx.utils.JsonValue;
 import com.vish.gdx.breakout.actors.BlockGroup;
-import com.vish.gdx.breakout.utils.Constants;
+import static com.vish.gdx.breakout.utils.Constants.*;
 
-public abstract class AbstractBlock extends Group implements Constants, Serializable {
+public abstract class AbstractBlock extends Group implements Serializable {
 
 	public Actor blockImage;
 	protected boolean destroy = false;

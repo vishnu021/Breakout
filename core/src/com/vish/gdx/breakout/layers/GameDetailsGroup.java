@@ -1,5 +1,6 @@
 package com.vish.gdx.breakout.layers;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.scenes.scene2d.Group;
@@ -11,9 +12,10 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.vish.gdx.breakout.GameStage;
 import com.vish.gdx.breakout.core.actors.ImageActor;
 import com.vish.gdx.breakout.core.assets.Assets;
-import com.vish.gdx.breakout.utils.Constants;
+import static com.vish.gdx.breakout.utils.Constants.*;
 
-public class GameDetailsGroup extends Group implements Constants {
+public class GameDetailsGroup extends Group {
+	private static final String TAG = GameDetailsGroup.class.getName();
 
 	Skin skinLibgdx;
 	final ImageActor pauseImage = new ImageActor(Assets.INSTANCE.getTexture("pause"));
@@ -80,7 +82,7 @@ public class GameDetailsGroup extends Group implements Constants {
 		pauseImage.addListener(new ClickListener() {
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
-				System.out.println("paused");
+				Gdx.app.debug(TAG, "paused");
 				super.clicked(event, x, y);
 				gameStage.gameState = State.PAUSE;
 				gameStage.pauseCover.setVisible(true);

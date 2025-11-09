@@ -17,9 +17,9 @@ import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.vish.gdx.breakout.actors.InteractiveBackground;
 import com.vish.gdx.breakout.core.actors.ImageActor;
 import com.vish.gdx.breakout.core.assets.Assets;
-import com.vish.gdx.breakout.utils.Constants;
+import static com.vish.gdx.breakout.utils.Constants.*;
 
-public class MenuScreen extends Stage implements Screen, Constants {
+public class MenuScreen extends Stage implements Screen {
 
 	Game thisGame;
 	private Skin skinLibgdx;

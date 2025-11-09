@@ -16,9 +16,9 @@ import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.Timer.Task;
 import com.vish.gdx.breakout.core.assets.Assets;
 import com.vish.gdx.breakout.layers.GameDetailsGroup;
-import com.vish.gdx.breakout.utils.Constants;
+import static com.vish.gdx.breakout.utils.Constants.*;
 
-public class BallGroup extends Group implements Constants {
+public class BallGroup extends Group {
 
 	public float theta = (MathUtils.PI / 180) * 45;
 	public boolean launchComplete = false;
@@ -26,7 +26,7 @@ public class BallGroup extends Group implements Constants {
 	World world;
 	int actionBallCount;
 	GameDetailsGroup gameDetailsGroup;
-	// private static float multiplicationFactor = 1;
+	private final java.util.ArrayList<Ball> ballsToRemove = new java.util.ArrayList<Ball>();
 
 	public BallGroup(World world, GameDetailsGroup gameDetailsGroup) {
 		this.world = world;
@@ -34,6 +34,11 @@ public class BallGroup extends Group implements Constants {
 	}
 
 	public void addBallActors(final float x, final float y, final int actionBallCount) {
+		if (actionBallCount <= 0) {
+			com.badlogic.gdx.Gdx.app.error("BallGroup", "Invalid ball count: " + actionBallCount);
+			return;
+		}
+
 		this.actionBallCount = actionBallCount - 1;
 		task = Timer.schedule(new Task() {
 			@Override
@@ -61,7 +66,24 @@ public class BallGroup extends Group implements Constants {
 	@Override
 	public void act(float delta) {
 		super.act(delta);
+		cleanupBalls();
+	}
 
+	private void cleanupBalls() {
+		for (Ball ball : ballsToRemove) {
+			if (ball.body != null) {
+				world.destroyBody(ball.body);
+				ball.body = null;
+			}
+			ball.remove();
+		}
+		ballsToRemove.clear();
+	}
+
+	public void markBallForRemoval(Ball ball) {
+		if (!ballsToRemove.contains(ball)) {
+			ballsToRemove.add(ball);
+		}
 	}
 
 	@Override
@@ -69,7 +91,7 @@ public class BallGroup extends Group implements Constants {
 		super.draw(batch, parentAlpha);
 	}
 
-	public static class Ball extends Image implements Constants {
+	public static class Ball extends Image {
 		private World world;
 		private Body body;
 		private float theta;
@@ -119,17 +141,19 @@ public class BallGroup extends Group implements Constants {
 		@Override
 		public void draw(Batch batch, float parentAlpha) {
 			super.draw(batch, parentAlpha);
-			if ((body.getPosition().y < (LOWER_MARGIN - BORDER + this.getHeight()) / PIXELS_TO_METERS)
-					&& (body.getLinearVelocity().y < 0)) {
-				world.destroyBody(body);
-				remove();
-			}
-			setPosition(body.getPosition().x * PIXELS_TO_METERS - getWidth() / 2,
-					body.getPosition().y * PIXELS_TO_METERS - getHeight() / 2);
+			if (body != null) {
+				if ((body.getPosition().y < (LOWER_MARGIN - BORDER + this.getHeight()) / PIXELS_TO_METERS)
+						&& (body.getLinearVelocity().y < 0)) {
+					((BallGroup) getParent()).markBallForRemoval(this);
+					return;
+				}
+				setPosition(body.getPosition().x * PIXELS_TO_METERS - getWidth() / 2,
+						body.getPosition().y * PIXELS_TO_METERS - getHeight() / 2);
 
-			if (Math.abs(body.getLinearVelocity().y) < 1f) {
-				body.setLinearVelocity(body.getLinearVelocity().x, body.getLinearVelocity().y
-						+ (body.getLinearVelocity().y) / Math.abs(body.getLinearVelocity().y) * 0.05f);
+				if (Math.abs(body.getLinearVelocity().y) < 1f) {
+					body.setLinearVelocity(body.getLinearVelocity().x, body.getLinearVelocity().y
+							+ (body.getLinearVelocity().y) / Math.abs(body.getLinearVelocity().y) * 0.05f);
+				}
 			}
 		}
 

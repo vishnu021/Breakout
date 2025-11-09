@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -20,9 +21,10 @@ import com.vish.gdx.breakout.blocks.AbstractBlock.BlockType;
 import com.vish.gdx.breakout.blocks.BlockCreatorFactory;
 import com.vish.gdx.breakout.blocks.PhysicalBlock;
 import com.vish.gdx.breakout.core.assets.Assets;
-import com.vish.gdx.breakout.utils.Constants;
+import static com.vish.gdx.breakout.utils.Constants.*;
 
-public class BlockGroup extends Group implements Constants, Serializable {
+public class BlockGroup extends Group implements Serializable {
+	private static final String TAG = BlockGroup.class.getName();
 
 	private static final long serialVersionUID = 1L;
 	Random random = new Random();
@@ -82,7 +84,7 @@ public class BlockGroup extends Group implements Constants, Serializable {
 			AbstractBlock child = (AbstractBlock) this.getChildren().get(i);
 			if ((this.getY() + child.getY()) < (LOWER_MARGIN + 2 * BLOCK_SIZE)) {
 				if (child instanceof PhysicalBlock) {
-					System.out.println("Game Over,clearing off.");
+					Gdx.app.log(TAG, "Game Over,clearing off.");
 					gameOver = true;
 					break;
 				} else {
@@ -104,8 +106,9 @@ public class BlockGroup extends Group implements Constants, Serializable {
 		blocks.add(BlockType.BONUS_BLOCK);
 		blocks.add(BlockType.PHYSICAL_BLOCK);
 
-		if (random.nextInt(3) > 0) {
-			switch (random.nextInt(3)) {
+		// Add special block (horizontal/vertical/double clearer) with 66% chance
+		if (random.nextInt(SPECIAL_BLOCK_CHANCE_DENOMINATOR) > 0) {
+			switch (random.nextInt(SPECIAL_BLOCK_CHANCE_DENOMINATOR)) {
 			case 0:
 				blocks.add(BlockType.HORIZONTAL_CLEARER);
 				break;
@@ -117,12 +120,17 @@ public class BlockGroup extends Group implements Constants, Serializable {
 				break;
 			}
 		}
+
+		// Double block value with ~22% chance
 		int blockValue = step;
-		if (random.nextInt(9) >= 7)
+		if (random.nextInt(DOUBLE_VALUE_DENOMINATOR) >= DOUBLE_VALUE_THRESHOLD) {
 			blockValue = step * 2;
+		}
+
+		// Fill remaining slots with physical or empty blocks
 		int initialBlockSize = blocks.size();
 		for (int i = 0; i < NUMBER_OF_BLOCKS - initialBlockSize; i++) {
-			if (random.nextInt(10) > 6) {
+			if (random.nextInt(EMPTY_BLOCK_DENOMINATOR) > EMPTY_BLOCK_THRESHOLD) {
 				blocks.add(BlockType.EMPTY_BLOCK);
 			} else {
 				blocks.add(BlockType.PHYSICAL_BLOCK);
@@ -171,7 +179,7 @@ public class BlockGroup extends Group implements Constants, Serializable {
 
 	@Override
 	public void read(Json json, JsonValue jsonData) {
-		System.out.println("Reading blockGroup");
+		Gdx.app.debug(TAG, "Reading blockGroup");
 		gameOver = json.readValue("gameOver", boolean.class, jsonData);
 		maxScore = json.readValue("maxScore", int.class, jsonData);
 		currentChildren = json.readValue("children", Array.class, jsonData);
@@ -180,17 +188,22 @@ public class BlockGroup extends Group implements Constants, Serializable {
 	}
 
 	public void load() {
-		System.out.println("creating children");
+		Gdx.app.debug(TAG, "creating children");
 		deleteBlock = new HashSet<AbstractBlock>();
 		for (Actor actor : currentChildren) {
 			try {
-				((AbstractBlock) actor).blockGroup = this;
-				((AbstractBlock) actor).load(world,
-						blockCreatorFactory.createBlockImage(((AbstractBlock) actor).blockType));
-				this.addActor(actor);
+				if (!(actor instanceof AbstractBlock)) {
+					Gdx.app.error(TAG, "Invalid actor type: " + actor.getClass().getName());
+					continue;
+				}
+				AbstractBlock block = (AbstractBlock) actor;
+				block.blockGroup = this;
+				block.load(world, blockCreatorFactory.createBlockImage(block.blockType));
+				this.addActor(block);
+			} catch (ClassCastException e) {
+				Gdx.app.error(TAG, "Type conversion error loading block: " + e.getMessage(), e);
 			} catch (Exception e) {
-				e.printStackTrace();
-				System.out.println("Invalid type coversion ");
+				Gdx.app.error(TAG, "Error loading block: " + e.getMessage(), e);
 			}
 		}
 	}

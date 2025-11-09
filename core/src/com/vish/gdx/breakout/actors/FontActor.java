@@ -8,9 +8,9 @@ import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.vish.gdx.breakout.utils.Assets;
-import com.vish.gdx.breakout.utils.Constants;
+import static com.vish.gdx.breakout.utils.Constants.*;
 
-public class FontActor extends Actor implements Constants {
+public class FontActor extends Actor {
 	private Matrix4 matrix = new Matrix4();
 	private BitmapFontCache bitmapFontCache;
 	public  GlyphLayout glplayout;

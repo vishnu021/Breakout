@@ -5,7 +5,9 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.graphics.Texture;
 
-public class AssetCreator implements Constants {
+import static com.vish.gdx.breakout.utils.Constants.*;
+
+public class AssetCreator {
 
 	public Texture createBackground() {
 		Pixmap pixmap;
