@@ -26,6 +26,14 @@ public class BreakoutGame extends Game {
 
 	@Override
 	public void dispose() {
+		// Dispose current screen (triggers pool cleanup)
+		if (getScreen() != null) {
+			getScreen().dispose();
+		}
+
+		// Dispose global assets
 		Assets.INSTANCE.dispose();
+
+		Gdx.app.log("Game", "App disposed - all pools cleared, GC can run");
 	}
 }

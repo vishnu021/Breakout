@@ -147,6 +147,14 @@ public class GameScreen implements Screen {
 
 	@Override
 	public void dispose() {
+		// Dispose stages and free object pools - allows GC
+		if (stage != null) {
+			stage.dispose();
+		}
+		if (pauseStage != null) {
+			pauseStage.dispose();
+		}
+		Gdx.app.debug(TAG, "GameScreen disposed - pools cleared, GC can run");
 	}
 
 	@Override

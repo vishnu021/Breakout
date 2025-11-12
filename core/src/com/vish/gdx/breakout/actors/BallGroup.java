@@ -1,5 +1,6 @@
 package com.vish.gdx.breakout.actors;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
@@ -9,9 +10,11 @@ import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.World;
-import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Pool;
+import com.badlogic.gdx.utils.Pools;
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.Timer.Task;
 import com.vish.gdx.breakout.core.assets.Assets;
@@ -26,16 +29,27 @@ public class BallGroup extends Group {
 	World world;
 	int actionBallCount;
 	GameDetailsGroup gameDetailsGroup;
-	private final java.util.ArrayList<Ball> ballsToRemove = new java.util.ArrayList<Ball>();
+
+	// Object pooling to prevent GC during gameplay
+	private final Pool<Ball> ballPool;
+	private final Array<Ball> ballsToRemove = new Array<Ball>(false, 16);
 
 	public BallGroup(World world, GameDetailsGroup gameDetailsGroup) {
 		this.world = world;
 		this.gameDetailsGroup = gameDetailsGroup;
+
+		// Initialize ball pool - no GC during gameplay!
+		this.ballPool = new Pool<Ball>(20, 100) {
+			@Override
+			protected Ball newObject() {
+				return new Ball();
+			}
+		};
 	}
 
 	public void addBallActors(final float x, final float y, final int actionBallCount) {
 		if (actionBallCount <= 0) {
-			com.badlogic.gdx.Gdx.app.error("BallGroup", "Invalid ball count: " + actionBallCount);
+			Gdx.app.error("BallGroup", "Invalid ball count: " + actionBallCount);
 			return;
 		}
 
@@ -49,7 +63,19 @@ public class BallGroup extends Group {
 	}
 
 	private void timerFunc(float x, float y) {
-		Ball ball = new Ball(world, Assets.INSTANCE.getTexture(BALL_TEXTURE), new Vector2(x, y), theta);
+		// Obtain from pool - reuses existing Ball object, no GC!
+		Ball ball = ballPool.obtain();
+
+		// Use pooled Vector2 to avoid allocation
+		Vector2 position = Pools.obtain(Vector2.class);
+		position.set(x, y);
+
+		// Initialize the ball with current parameters
+		ball.init(world, Assets.INSTANCE.getTexture(BALL_TEXTURE), position, theta);
+
+		// Free the Vector2 back to pool immediately
+		Pools.free(position);
+
 		this.addActor(ball);
 
 		if (actionBallCount > 0) {
@@ -76,14 +102,41 @@ public class BallGroup extends Group {
 				ball.body = null;
 			}
 			ball.remove();
+
+			// Return ball to pool for reuse - no GC!
+			ballPool.free(ball);
 		}
 		ballsToRemove.clear();
 	}
 
 	public void markBallForRemoval(Ball ball) {
-		if (!ballsToRemove.contains(ball)) {
+		if (!ballsToRemove.contains(ball, true)) {
 			ballsToRemove.add(ball);
 		}
+	}
+
+	/**
+	 * Clear all balls and free pools - ONLY call on game end or app close!
+	 */
+	public void dispose() {
+		// Clear active balls
+		for (int i = getChildren().size - 1; i >= 0; i--) {
+			if (getChildren().get(i) instanceof Ball) {
+				Ball ball = (Ball) getChildren().get(i);
+				if (ball.body != null) {
+					world.destroyBody(ball.body);
+					ball.body = null;
+				}
+			}
+		}
+
+		// Clear pending removals
+		ballsToRemove.clear();
+
+		// Free all pooled balls - allows GC to reclaim memory
+		ballPool.clear();
+
+		Gdx.app.debug("BallGroup", "Disposed - pools cleared");
 	}
 
 	@Override
@@ -91,20 +144,43 @@ public class BallGroup extends Group {
 		super.draw(batch, parentAlpha);
 	}
 
-	public static class Ball extends Image {
+	/**
+	 * Poolable Ball class - can be reset and reused to prevent GC
+	 */
+	public static class Ball extends Image implements Pool.Poolable {
 		private World world;
 		private Body body;
 		private float theta;
 
-		public Ball(World world, TextureRegion texture, Vector2 position, float theta) {
-			super(texture);
+		/**
+		 * Default constructor for pooling - DO NOT USE DIRECTLY!
+		 * Use ballPool.obtain() instead
+		 */
+		public Ball() {
+			super();
+		}
+
+		/**
+		 * Initialize/reinitialize ball with parameters
+		 * Called when obtaining from pool
+		 */
+		public void init(World world, TextureRegion texture, Vector2 position, float theta) {
 			this.world = world;
+			this.setDrawable(new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(texture));
 			this.setSize(BALL_SIZE, BALL_SIZE);
 			this.setScale(1f);
 			this.theta = theta;
 			addPhysics(position.x + BALL_SIZE / 2, position.y + BALL_SIZE / 2);
 			this.setPosition(position.x, position.y);
-			// System.out.println("creating new ball : " + this);
+		}
+
+		@Override
+		public void reset() {
+			// Reset ball state when returning to pool
+			this.world = null;
+			this.body = null;
+			this.theta = 0;
+			this.setPosition(0, 0);
 		}
 
 		private void addPhysics(float x, float y) {
@@ -112,10 +188,10 @@ public class BallGroup extends Group {
 			def.type = BodyDef.BodyType.DynamicBody;
 			def.position.set(x / PIXELS_TO_METERS, y / PIXELS_TO_METERS);
 			body = world.createBody(def);
-			addFixture(x, y);
+			addFixture();
 		}
 
-		private void addFixture(float x, float y) {
+		private void addFixture() {
 			CircleShape circle = new CircleShape();
 			circle.setRadius(BALL_SIZE / (2 * PIXELS_TO_METERS));
 			FixtureDef fixtureDef = new FixtureDef();
@@ -134,8 +210,10 @@ public class BallGroup extends Group {
 		}
 
 		public void changeSpeed(float ballVelocity) {
-			Vector2 vel = body.getLinearVelocity();
-			body.setLinearVelocity(vel.x * ballVelocity, vel.y * ballVelocity);
+			if (body != null) {
+				Vector2 vel = body.getLinearVelocity();
+				body.setLinearVelocity(vel.x * ballVelocity, vel.y * ballVelocity);
+			}
 		}
 
 		@Override
@@ -160,8 +238,7 @@ public class BallGroup extends Group {
 		@Override
 		public String toString() {
 			return "Ball [world=" + world + ", body=" + body + ", theta=" + theta + "," + " velocity : "
-					+ body.getLinearVelocity() + "]";
+					+ (body != null ? body.getLinearVelocity() : "null") + "]";
 		}
-
 	}
 }

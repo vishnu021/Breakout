@@ -346,6 +346,33 @@ public class GameStage extends Stage implements GestureListener, Serializable {
 		json.writeValue("blockGroup", blockGroup);
 	}
 
+	/**
+	 * Dispose resources - ONLY called when app closes or screen is permanently disposed.
+	 * NOT called during normal gameplay or game over.
+	 * This is where GC is allowed to happen.
+	 */
+	@Override
+	public void dispose() {
+		Gdx.app.debug(TAG, "Disposing GameStage - clearing pools and freeing resources");
+
+		// Dispose ball pool - allows GC to reclaim memory
+		if (ballGroup != null) {
+			ballGroup.dispose();
+		}
+
+		// Dispose physics world
+		if (world != null) {
+			world.dispose();
+		}
+
+		// Dispose debug renderer if used
+		if (debugRenderer != null) {
+			debugRenderer.dispose();
+		}
+
+		super.dispose();
+	}
+
 	@Override
 	public String toString() {
 		return "GameStage [slider=" + slider + ", dottedLine=" + dottedLine + ", pauseCover=" + pauseCover
